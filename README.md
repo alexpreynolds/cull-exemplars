@@ -45,7 +45,7 @@ In the `wis` target, we use a [dynamic programming](https://en.wikipedia.org/wik
 
 This locally optimal path contains elements which do not overlap within 2kb. If we have more than 250k such elements in this path, we use a priority queue to pull out the top 250k such elements.
 
-Intervals filtered via this path are written to standard output.
+Intervals retrieved via this path are written to standard output.
 
 ### Validation
 
@@ -60,14 +60,16 @@ Here is a summary of the baseline score distribution of the input elements. This
   0.3819   0.9664   2.2576   4.5391   5.3447 102.5106 
 ```
 
-The filtered subsets should meet or beat these values. Via the `priority_queue_summary` target:
+The filtered subsets should meet or beat these values. 
+
+Here is the score profile of `priority_queue` output, via the `priority_queue_summary` target:
 
 ```
    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
   1.962   3.566   6.455  10.689  13.111 102.511 
 ```
 
-And via the `wis_summary` target:
+And likewise for the output from the `wis` method, via the `wis_summary` target:
 
 ```
    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
