@@ -43,7 +43,7 @@ Intervals we keep are written to standard output.
 
 In the `wis` target, we use a [dynamic programming](https://en.wikipedia.org/wiki/Interval_scheduling#Weighted) approach to trace a path of high-scoring elements which do not overlap one another within 2kb.
 
-This locally optimal path contains elements which do not overlap within 2kb. If we have more than 250k such elements in this path, we use a priority queue to pull out the top-250k such elements.
+This locally optimal path contains elements which do not overlap within 2kb. If we have more than 250k such elements in this path, we use a priority queue to pull out the top 250k such elements.
 
 Intervals filtered via this path are written to standard output.
 
