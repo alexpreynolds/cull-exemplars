@@ -31,6 +31,7 @@ intervals_summary:
 	cut -f5 ${INTERVALS_BED} | Rscript -e 'summary (as.numeric (readLines ("stdin")))'
 
 priority_queue:
+	mkdir -p ${RESULTS_DIR}
 	${PWD}/max_heap.py --input ${WINDOWS_BED} --k ${DESIRED_HITS} --window-span ${WINDOW_SPAN_COUNT} \
 		| bedops --range ${WINDOW_SIZE}:-${WINDOW_SIZE} --everything - \
 		> ${PQ_RESULTS_BED}
@@ -42,6 +43,7 @@ priority_queue_summary:
 	cut -f5 ${PQ_RESULTS_BED} | Rscript -e 'summary (as.numeric (readLines ("stdin")))'
 
 wis:
+	mkdir -p ${RESULTS_DIR}
 	${PWD}/weighted_interval_scheduling_via_iteration.py --input ${WINDOWS_BED} --k ${DESIRED_HITS} \
 		| bedops --range ${WINDOW_SIZE}:-${WINDOW_SIZE} --everything - \
 		> ${WIS_RESULTS_BED}
