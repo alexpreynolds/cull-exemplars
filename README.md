@@ -33,9 +33,9 @@ Running the `assembly` and `prep` targets sets up files required for running the
 
 In the `priority_queue` target, we put padded bins into a [priority queue](https://en.wikipedia.org/wiki/Priority_queue), ordered by score. 
 
-We pop the highest-scoring element off the queue, and keep it if it does not overlap any other popped elements. If it does, any lower-scored overlaps are marked as rejected. 
+We pop the highest-scoring element off the queue, and keep it if it does not overlap any other popped elements. If it does, we still keep it, but all lower-scored overlaps within 2kb are marked as rejected.
 
-We pop the next highest-scoring element and ask if it has already been rejected. If not, we keep it and again mark any lower-scored overlaps as rejected, if there are any. If it is rejected, we skip it and keep popping and testing, until there are no elements left in the queue to test.
+We pop the next highest-scoring element and ask if it has already been rejected. If it hasn't, we keep it and we again mark any lower-scored overlaps as rejected, if there are any. If it was previously rejected, we skip it and keep popping and testing, until there are no elements left in the queue to pop-and-test.
 
 Intervals we keep are written to standard output.
 
