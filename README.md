@@ -37,11 +37,15 @@ We pop the highest-scoring element off the queue, and keep it if it does not ove
 
 We pop the next highest-scoring element and ask if it has already been rejected. If not, we keep it and again mark any lower-scored overlaps as rejected, if there are any. If it is rejected, we skip it and keep popping and testing, until there are no elements left in the queue to test.
 
+Intervals we keep are written to standard output.
+
 ### Weighted-interval scheduling
 
 In the `wis` target, we use a [dynamic programming](https://en.wikipedia.org/wiki/Interval_scheduling#Weighted) approach to trace a path of high-scoring elements which do not overlap one another within 2kb.
 
 This locally optimal path contains elements which do not overlap within 2kb. If we have more than 250k such elements in this path, we use a priority queue to pull out the top-250k such elements.
+
+Intervals filtered via this path are written to standard output.
 
 ### Validation
 
