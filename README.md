@@ -15,7 +15,7 @@ We apply two methods to filter intervals and meet the following criteria:
 
 ### Input
 
-We start with `data/intervals.txt.gz`, which contains ~4.4M intervals.
+We start with `data/intervals.txt.gz`, which contains ~4.5M intervals.
 
 Each interval is a 200nt "bin" with a priority score in the fifth column (other columns are allowed and are ignored during processing).
 
@@ -39,7 +39,7 @@ We pop the next highest-scoring element and ask if it has already been rejected.
 
 Intervals we keep are written to standard output.
 
-In the `priority_queue_max_hits`, we specify a `k` value of ~4.4M. This is the number of intervals we started with. In the optimal case, the intervals are all 2kb or more away from each other, but in reality there are overlaps and some number will get filtered. In this case, if an element popped off our queue has a score of zero, it is an artificial "placeholder" bin, so we stop testing and write whatever intervals we find to standard output.
+In the `priority_queue_max_hits` target, we specify a larger `k` value of 4453117 (~4.5M). This is the number of intervals we started with and the maximum number we can get back. In the optimal case, all intervals would be 2kb or more away from each other, but in reality there are overlaps and so some fraction of these will get filtered. In this case, we will therefore eventually pop an element off the queue that has a score of zero. This is an artificial "placeholder" bin, so we cease testing at this point and write whatever intervals we have found to standard output.
 
 ### Weighted-interval scheduling
 
@@ -82,11 +82,13 @@ In addition to giving a better score result, the `priority_queue` method ran muc
 
 ### Priority queue (max-hits)
 
-In the case of the `priority_queue_max_hits` target output, we get 395649 elements before we exhaust the queue. This has the following score profile:
+In the case of the `priority_queue_max_hits` target output, we get 395649 elements before we exhaust the queue. 
+
+These elements have the following score profile:
 
 ```
    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
   0.382   1.206   3.236   7.119   8.480 102.511 
 ```
 
-Exhausting the queue performs worse than the `wis` method, score-wise, but this method returns more elements (~400k) as opposed to `wis`, which can return at most only ~251k elements, when it is run to completion.
+Exhausting the queue performs worse than the `wis` method, score-wise, but this method returns more elements (~400k) as opposed to `wis`, which can return at most only ~251k elements when it is run to completion.
