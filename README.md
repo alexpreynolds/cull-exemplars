@@ -19,6 +19,8 @@ We start with `data/intervals.txt.gz`, which contains ~4.5M intervals.
 
 Each interval is a 200nt "bin" with a priority score in the fifth column (other columns are allowed and are ignored during processing).
 
+All starting bins have a positive, non-zero score. We take advantage of this property to fill in gaps with "placeholder" or "sentinel" bins, each with a zero score. This property will be exploited to know when the priority queue method is "exhausted", i.e., when there are no more valid bins to filter.
+
 ### Output
 
 The output from each of the two methods (discussed below) contains a filtered subset of the input bins, which meet the desired criteria.
