@@ -15,11 +15,11 @@ We apply two methods to filter intervals and meet the following criteria:
 
 ### Input
 
-We start with `data/intervals.txt.gz`, which contains ~4.5M intervals.
+We start with `data/intervals.txt.gz`, which contains ~4.5M intervals within `hg19` space.
 
 Each interval is a 200nt "bin" with a priority score in the fifth column (other columns are allowed and are ignored during processing).
 
-All starting bins have a positive, non-zero score. We take advantage of this property to fill in gaps with "placeholder" or "sentinel" bins, each with a zero score. This property will be exploited to know when the priority queue method is "exhausted", i.e., when there are no more valid bins to filter.
+Not all of `hg19` is covered. All starting bins have a positive, non-zero score. We take advantage of this property to fill in gaps in `hg19` space with "placeholder" or "sentinel" bins, each with a zero score. This property will be exploited to know when the priority queue method is "exhausted", i.e., when there are no more valid bins to filter.
 
 ### Output
 
