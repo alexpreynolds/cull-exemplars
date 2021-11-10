@@ -37,11 +37,11 @@ In the `priority_queue` and `priority_queue_max_hits` targets, we put padded bin
 
 We pop the highest-scoring element off the queue, and keep it if it does not overlap any other popped elements. If it does, we still keep it, but all lower-scored overlaps within 2kb are marked as rejected.
 
-We pop the next highest-scoring element and ask if it has already been rejected. If it hasn't, we keep it and we again mark any lower-scored overlaps as rejected, if there are any. If it was previously rejected, we skip it and keep popping and testing, until there are no elements left in the queue to pop-and-test.
+We pop the next highest-scoring element and ask if it has already been rejected. If it hasn't, we keep it and we again mark any lower-scored overlaps as rejected, if there are any. If it was previously rejected, we skip it and keep popping and testing, until there are no elements left in the queue to pop-and-test, or until we hit some preselected number of intervals (250k).
 
 Intervals we keep are written to standard output.
 
-In the `priority_queue_max_hits` target, we specify a larger `k` value of 4453117 (~4.5M). This is the number of intervals we started with and the maximum number we can get back. In the optimal case, all intervals would be 2kb or more away from each other, but in reality there are overlaps and so some fraction of these will get filtered. In this case, we will therefore eventually pop an element off the queue that has a score of zero. This is an artificial "placeholder" bin, so we cease testing at this point and write whatever intervals we have found to standard output.
+In the `priority_queue_max_hits` target, we specify a larger `k` value of 4453117 (~4.5M). This is the number of intervals we started with and therefore the maximum number we can get back from any method. In the optimal case, all intervals would be 2kb or more away from each other, but in reality there are overlaps and so some fraction of these will get filtered. In this case, we will therefore eventually pop an element off the queue that has a score of zero. This is an artificial "placeholder" or sentinel bin, so we cease testing at this point and write whatever intervals we have found to standard output.
 
 ### Weighted-interval scheduling
 
