@@ -25,7 +25,7 @@ The output from each of the two methods (discussed below) contains a filtered su
 
 ### Targets
 
-Running the `assembly` and `prep` targets sets up files required for running the two filtering methods.
+Running the `assembly` and `prep` targets sets up files required for running the two filtering methods (`priority_queue` and `wis`).
 
 ## Methods
 
