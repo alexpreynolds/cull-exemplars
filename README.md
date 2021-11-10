@@ -15,7 +15,7 @@ We apply two methods to filter intervals and meet the following criteria:
 
 ### Input
 
-We start with `data/intervals.txt.gz`, which contains 4.4M intervals.
+We start with `data/intervals.txt.gz`, which contains ~4.4M intervals.
 
 Each interval is a 200nt "bin" with a priority score in the fifth column (other columns are allowed and are ignored during processing).
 
@@ -31,13 +31,15 @@ Running the `assembly` and `prep` targets sets up files required for running the
 
 ### Priority queue
 
-In the `priority_queue` target, we put padded bins into a [priority queue](https://en.wikipedia.org/wiki/Priority_queue), ordered by score. 
+In the `priority_queue` and `priority_queue_max_hits` targets, we put padded bins into a [priority queue](https://en.wikipedia.org/wiki/Priority_queue), ordered by score. 
 
 We pop the highest-scoring element off the queue, and keep it if it does not overlap any other popped elements. If it does, we still keep it, but all lower-scored overlaps within 2kb are marked as rejected.
 
 We pop the next highest-scoring element and ask if it has already been rejected. If it hasn't, we keep it and we again mark any lower-scored overlaps as rejected, if there are any. If it was previously rejected, we skip it and keep popping and testing, until there are no elements left in the queue to pop-and-test.
 
 Intervals we keep are written to standard output.
+
+In the `priority_queue_max_hits`, we specify a `k` value of ~4.4M. This is the number of intervals we started with. In the optimal case, the intervals are all 2kb or more away from each other, but in reality there are overlaps and some number will get filtered. In this case, if an element popped off our queue has a score of zero, it is an artificial "placeholder" bin, so we stop testing and write whatever intervals we find to standard output.
 
 ### Weighted-interval scheduling
 
@@ -77,3 +79,14 @@ And likewise for the output from the `wis` method, via the `wis_summary` target:
 ```
 
 In addition to giving a better score result, the `priority_queue` method ran much faster on this data than the `wis` method.
+
+### Priority queue (max-hits)
+
+In the case of the `priority_queue_max_hits` target output, we get 395649 elements before we exhaust the queue. This has the following score profile:
+
+```
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  0.382   1.206   3.236   7.119   8.480 102.511 
+```
+
+Exhausting the queue performs worse than the `wis` method, score-wise, but this method returns more elements (~400k) as opposed to `wis`, which can return at most only ~251k elements, when it is run to completion.

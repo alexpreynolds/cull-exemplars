@@ -82,12 +82,14 @@ def main(input, k, window_span):
         heapq.heappush(h, (-v, i))
     '''
     Build a qualifying list, until we have as many elements as we want,
-    or until we have emptied the heap.
+    or until we have emptied the heap of testable, non-zero-score indices.
     '''
     q = []
     while k > 0:
         try:
             (v, i) = heapq.heappop(h)
+            if v == 0:
+                break
             start_i = (i - window_span) if (i - window_span) > 0 else 0
             stop_i = (i + window_span + 1) if (i + window_span + 1) <= n else n
             # sys.stderr.write('k {} | testing key {} | bounds [{}:{}] -> {}'.format(k, i, start_i, stop_i, np.any(r[start_i:stop_i])))

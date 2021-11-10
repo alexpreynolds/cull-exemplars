@@ -1,6 +1,7 @@
 SHELL=/bin/bash
 
 DESIRED_HITS=250000
+MAXIMUM_POSSIBLE_HITS=4453117 # -> wc -l ${INTERVALS_BED}
 WINDOW_SIZE=2000
 BIN_SIZE=200
 WINDOW_SPAN_COUNT=10 # -> WINDOW_SIZE / BIN_SIZE
@@ -12,6 +13,7 @@ BUILD_BED=${DATA_DIR}/${ASSEMBLY}.bed
 WINDOWS_BED=${DATA_DIR}/windows.bed
 RESULTS_DIR=${PWD}/../results
 PQ_RESULTS_BED=${RESULTS_DIR}/pq.bed
+PQ_MAX_RESULTS_BED=${RESULTS_DIR}/pq.maxhits.bed
 WIS_RESULTS_BED=${RESULTS_DIR}/wis.bed
 
 all:
@@ -41,6 +43,18 @@ priority_queue_validate_no_overlaps:
 
 priority_queue_summary:
 	cut -f5 ${PQ_RESULTS_BED} | Rscript -e 'summary (as.numeric (readLines ("stdin")))'
+
+priority_queue_max_hits:
+	mkdir -p ${RESULTS_DIR}
+	${PWD}/max_heap.py --input ${WINDOWS_BED} --k ${MAXIMUM_POSSIBLE_HITS} --window-span ${WINDOW_SPAN_COUNT} \
+		| bedops --range ${WINDOW_SIZE}:-${WINDOW_SIZE} --everything - \
+		> ${PQ_MAX_RESULTS_BED}
+
+priority_queue_max_hits_validate_no_overlaps:
+	${PWD}/validate_no_overlaps.py ${WINDOW_SIZE} < ${PQ_MAX_RESULTS_BED}
+
+priority_queue_max_hits_summary:
+	cut -f5 ${PQ_MAX_RESULTS_BED} | Rscript -e 'summary (as.numeric (readLines ("stdin")))'
 
 wis:
 	mkdir -p ${RESULTS_DIR}
