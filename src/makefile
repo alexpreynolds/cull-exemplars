@@ -1,17 +1,21 @@
 SHELL=/bin/bash
 
-DESIRED_HITS=250000
-MAXIMUM_POSSIBLE_HITS=4453117 # -> wc -l ${INTERVALS_BED}
+DESIRED_HITS=15181508
+MAXIMUM_POSSIBLE_HITS=15181508 # -> wc -l ${INTERVALS_BED}
 WINDOW_SIZE=2000
 BIN_SIZE=200
 WINDOW_SPAN_COUNT=10 # -> WINDOW_SIZE / BIN_SIZE
 DATA_DIR=${PWD}/../data
-INTERVALS_GZ=${DATA_DIR}/intervals.txt.gz
-INTERVALS_BED=${DATA_DIR}/intervals.bed
+RESULTS_DIR=${PWD}/../results
+# INTERVALS_GZ=${DATA_DIR}/intervals.txt.gz
+# INTERVALS_BED=${DATA_DIR}/intervals.bed
+# INTERVALS_GZ=${RESULTS_DIR}/highValueData.txt.gz
+#INTERVALS_BED=${RESULTS_DIR}/highValueData.bed
+INTERVALS_GZ=${RESULTS_DIR}/flattenedData.txt.gz
+INTERVALS_BED=${RESULTS_DIR}/flattenedData.bed
 ASSEMBLY=hg19
 BUILD_BED=${DATA_DIR}/${ASSEMBLY}.bed
 WINDOWS_BED=${DATA_DIR}/windows.bed
-RESULTS_DIR=${PWD}/../results
 PQ_RESULTS_BED=${RESULTS_DIR}/pq.bed
 PQ_MAX_RESULTS_BED=${RESULTS_DIR}/pq.maxhits.bed
 WIS_RESULTS_BED=${RESULTS_DIR}/wis.bed
@@ -58,7 +62,7 @@ priority_queue_max_hits_summary:
 
 wis:
 	mkdir -p ${RESULTS_DIR}
-	${PWD}/weighted_interval_scheduling_via_iteration.py --input ${WINDOWS_BED} --k ${DESIRED_HITS} \
+	${PWD}/weighted_interval_scheduling_via_iteration.py --input ${WINDOWS_BED} --k 1007638 \
 		| bedops --range ${WINDOW_SIZE}:-${WINDOW_SIZE} --everything - \
 		> ${WIS_RESULTS_BED}
 

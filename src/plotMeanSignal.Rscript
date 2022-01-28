@@ -1,0 +1,25 @@
+#!/usr/bin/env Rscript
+
+## get command line arguments
+args <- commandArgs(trailingOnly=TRUE)
+inputfile <- args[1]
+outputfile <- args[2]
+
+library("readr")
+
+d1 <- read_delim(inputfile, "|", col_names=c("location", "score", "mapped_scores_str"), show_col_types=FALSE)
+mapped_scores <- strsplit((d1$mapped_scores_str), split=";")
+
+d2 <- data.frame(matrix(as.numeric(unlist(mapped_scores)), nrow=length(mapped_scores), byrow=TRUE))
+
+min_max_norm <- function(x) {
+  (x - min(x)) / (max(x) - min(x))
+}
+d3 <- t(apply(d2, 1, min_max_norm))
+
+d4 <- colMeans(d3)
+
+library("ggplot2")
+pdf(outputfile)
+ggplot(data.frame(column = 1:length(d4), mean = d4), aes(x = column, y = mean)) + geom_line() + ylim(0, 1)
+dev.off()
