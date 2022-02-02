@@ -32,8 +32,9 @@ In case no such overlap is found (such as the very first pop), we
 add the candidate element to the qualifying list, then pop another 
 element and repeat the test.
 
-In case an overlap is found somewhere, we just skip this candidate 
-and pop another element off the heap, repeating the test.
+In case an overlap is found somewhere, and if it is smaller than the
+kth-percentile value passed into this script, we skip this candidate 
+and pop another element off the heap.
 
 At the end, we print out all `k` elements that qualified.
 
@@ -66,8 +67,13 @@ import click
 @click.option('--input', help='input filename')
 @click.option('--k', type=int, help='samples')
 @click.option('--window-span', type=int, default=10, help='number of windows used for overlap/rejection testing')
-def main(input, k, window_span):
-    df = pd.read_csv(input, sep='\t', header=None, names=['Chromosome', 'Start', 'End', 'ID', 'Score', 'Strand', 'PVal', 'CorrectedPVal', 'Signif'])
+@click.option('--kth-percentile', type=float, default=0, help='value of kth percentile weight (e.g., 95%)')
+@click.option('--is-final-pass', default=False, is_flag=True, help='is this a final pass on data')
+def main(input, k, window_span, kth_percentile, is_final_pass):
+    column_names = ['Chromosome', 'Start', 'End', 'ID', 'Score', 'Strand', 'PVal', 'CorrectedPVal', 'Signif']
+    if is_final_pass:
+        column_names = ['Chromosome', 'Start', 'End', 'ID', 'Score', 'Strand']
+    df = pd.read_csv(input, sep='\t', header=None, names=column_names)
     n = len(df.index)
     r = np.zeros(n, dtype=np.bool_)
     w = df.loc[:, 'Score'].values
@@ -93,7 +99,10 @@ def main(input, k, window_span):
             start_i = (i - window_span) if (i - window_span) > 0 else 0
             stop_i = (i + window_span + 1) if (i + window_span + 1) <= n else n
             # sys.stderr.write('k {} | testing key {} | bounds [{}:{}] -> {}'.format(k, i, start_i, stop_i, np.any(r[start_i:stop_i])))
-            if not np.any(r[start_i:stop_i]):
+            '''
+            If the test weight is gte to the kth-percentile, we keep it
+            '''
+            if not np.any(r[start_i : stop_i]) or (-v >= kth_percentile and not is_final_pass):
                 r[i] = True
                 q.append(i)
                 k -= 1
