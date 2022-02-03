@@ -39,6 +39,10 @@ prep:
 intervals_summary:
 	cut -f5 ${INTERVALS_BED} | Rscript -e 'summary (as.numeric (readLines ("stdin")))'
 
+max_mean_window_sweep:
+	mkdir -p ${RESULTS_DIR}
+	${PWD}/max_mean_window_sweep.py --input ${WINDOWS_BED} --k ${DESIRED_HITS} --window-span ${WINDOW_SPAN_COUNT}
+
 priority_queue:
 	mkdir -p ${RESULTS_DIR}
 	${PWD}/max_heap.py --input ${WINDOWS_BED} --k ${DESIRED_HITS} --window-span ${WINDOW_SPAN_COUNT} \
