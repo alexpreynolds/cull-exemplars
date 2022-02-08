@@ -1,14 +1,16 @@
 SHELL=/bin/bash
 
 DESIRED_HITS=15181508
-MAXIMUM_POSSIBLE_HITS=15181508 # -> wc -l ${INTERVALS_BED}
+MAXIMUM_POSSIBLE_HITS=3036026 #4453117 # 15181508 # -> wc -l ${INTERVALS_BED}
 WINDOW_SIZE=2000
 BIN_SIZE=200
 WINDOW_SPAN_COUNT=10 # -> WINDOW_SIZE / BIN_SIZE
 DATA_DIR=${PWD}/../data
 RESULTS_DIR=${PWD}/../results
-INTERVALS_GZ=${DATA_DIR}/intervals.txt.gz
-INTERVALS_BED=${DATA_DIR}/intervals.bed
+# INTERVALS_GZ=${DATA_DIR}/intervals.txt.gz
+# INTERVALS_BED=${DATA_DIR}/intervals.bed
+# INTERVALS_GZ=${DATA_DIR}/pairwiseMetrics_cancer_non-cancer_s1.txt.gz
+# INTERVALS_BED=${DATA_DIR}/pairwiseMetrics_cancer_non-cancer_s1.bed
 # INTERVALS_GZ=${RESULTS_DIR}/highValueData.txt.gz
 # INTERVALS_BED=${RESULTS_DIR}/highValueData.bed
 # INTERVALS_GZ=${RESULTS_DIR}/flattenedData.txt.gz
@@ -20,10 +22,27 @@ PQ_RESULTS_BED=${RESULTS_DIR}/pq.bed
 PQ_MAX_RESULTS_BED=${RESULTS_DIR}/pq.maxhits.bed
 PQ_MAX_WITH_KTH_PERC_RESULTS_BED=${RESULTS_DIR}/pq.maxhitsWithKthPercentile.bed
 WIS_RESULTS_BED=${RESULTS_DIR}/wis.bed
+MAX_MEAN_RESULTS_BED=${RESULTS_DIR}/maxMean.bed
 
 KTH_PERC := $(shell cut -f5 ${INTERVALS_BED} | Rscript -e 'quantile(as.numeric(readLines("stdin")), c(0.99))' | tail -1)
 
 all:
+
+#
+# for disjoint-windows
+#
+
+INPUT_FN=${DATA_DIR}/windows.fixed.25k.bed
+LEFT_WINDOW_WIDTH=12000
+RIGHT_WINDOW_WIDTH=12000
+EXTEND_WIDTH=12000
+WINDOW_WIDTH=25000
+INTERVAL_STEP=1000
+WINDOWS_BED=${INPUT_FN}
+WINDOW_SPAN_COUNT=60
+
+extend_windows:
+	${PWD}/extend_windows.sh ${LEFT_WINDOW_WIDTH} ${RIGHT_WINDOW_WIDTH} ${WINDOW_WIDTH} ${DATA_DIR}/removeOverlap.bed.starch ${INPUT_FN}
 
 assembly:
 	fetchChromSizes ${ASSEMBLY} \
@@ -41,7 +60,9 @@ intervals_summary:
 
 max_mean_window_sweep:
 	mkdir -p ${RESULTS_DIR}
-	${PWD}/max_mean_window_sweep.py --input ${WINDOWS_BED} --k ${DESIRED_HITS} --window-span ${WINDOW_SPAN_COUNT}
+	${PWD}/max_mean_window_sweep.py --input ${WINDOWS_BED} --k ${DESIRED_HITS} --window-span ${WINDOW_SPAN_COUNT} \
+		| sort-bed --tmpdir ${PWD} --max-mem 2G - \
+		> ${MAX_MEAN_RESULTS_BED}
 
 priority_queue:
 	mkdir -p ${RESULTS_DIR}
@@ -118,7 +139,9 @@ priority_queue_max_hits_with_kth_percentile_summary:
 
 wis:
 	mkdir -p ${RESULTS_DIR}
-	${PWD}/weighted_interval_scheduling_via_iteration.py --input ${WINDOWS_BED} --k 1007638 \
+	awk -v FS="\t" -v OFS="\t" '(NF==8)' ${WINDOWS_BED} > ${WINDOWS_BED}.c1t8
+#	bedextract chr22 ${WINDOWS_BED}.c1t8 > ${WINDOWS_BED}.c1t8.chr22
+	${PWD}/weighted_interval_scheduling_via_iteration.py --input ${WINDOWS_BED}.c1t8 --k 554964 \
 		| bedops --range ${WINDOW_SIZE}:-${WINDOW_SIZE} --everything - \
 		> ${WIS_RESULTS_BED}
 

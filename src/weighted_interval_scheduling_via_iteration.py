@@ -53,16 +53,21 @@ import click
 def main(input, k):
     '''
     Use merged intervals to build absolute coordinate space later on.
+    Instead of the builtin read_bed method we use Pandas read_table to
+    keep the strand value from grouping subsets of data, which gives 
+    weird set operation results.
     '''
-    d = pr.read_bed(input)
-    m = d.merge()
+    # d = pr.read_bed(input)
+    d = pr.PyRanges(pd.read_table(input, names=['Chromosome', 'Start', 'End', 'State', 'Score', 'Metastrand', 'Pval', 'Qval']))
+    m = d.merge(strand=False)
     df = d.as_df()
     n = len(df.index)
     '''
     Build accumulated sizes dictionary for calculating absolute coordinates.
     '''
     acc_chr = m.as_df().loc[:, 'Chromosome'].copy().values
-    acc_abs = np.concatenate([[0], m.as_df().loc[:, 'End'].copy().values[:-1]])
+    acc_end = m.as_df().loc[:, 'End'].copy()
+    acc_abs = np.concatenate([[0], acc_end.values[:-1]])
     j = len(acc_abs) - 1
     while j > 0:
         acc_abs[j] = np.sum(acc_abs[0:j+1])
@@ -125,6 +130,11 @@ def main(input, k):
         score = df.loc[df.index[j], 'Score']
         if score + opt[p[j]] > opt[j - 1]:
             q.append(j)
+            try:
+                assert(j > p[j])
+            except AssertionError:
+                sys.stderr.write('[j fail -> {} | p[j] -> {} ]\n'.format(j, p[j]))
+                sys.exit(-1)
             j = p[j] # jump to the nearest disjoint interval to the left
         else:
             j -= 1 # try the "next" interval, one to the left

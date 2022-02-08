@@ -1,0 +1,111 @@
+#!/usr/bin/env python
+
+'''
+
+Assume a genome-wide signal vector S, and a window of size k.
+
+1. In a continuous sliding window, calculate max() over S within size k
+   windows -- make sure the estimator is in the center, i.e. k/2 to the left
+   and k/2 to the right. This will result in a step-like signal, indicating
+   regions containing high local maxima, i.e. peaks.
+
+2. In the same way, calculate mean() over S within size k windows. This
+   constitutes a smooth estimator for regions with generally higher signals
+   and will be used to break ties.
+
+3. Order the genome by 1) (primary) and 2) (secondary) -- this way, 2) breaks
+   ties in 1), since there will be many of those. Walk through the ordered
+   list in a descending manner, and remove elements/windows that overlap
+   higher scoring ones.
+
+'''
+
+import sys
+import heapq
+import numpy as np
+import pandas as pd
+from io import StringIO
+import click
+
+@click.command()
+@click.option('--input', help='input filename')
+@click.option('--k', type=int, help='samples')
+@click.option('--window-span', type=int, default=10, help='number of windows used for overlap/rejection testing')
+def main(input, k, window_span):
+    column_names = ['Chromosome', 'Start', 'End', 'ID', 'Score', 'Strand', 'PVal', 'CorrectedPVal', 'Signif']
+    df = pd.read_csv(input, sep='\t', header=None, names=column_names)
+    df = df.iloc[0:100]
+    n = len(df.index)
+    r = np.zeros(n, dtype=np.bool_)
+    w = df.loc[:, 'Score'].values
+    est_max = np.zeros(n)
+    np.put(est_max, np.arange(0, window_span), np.nan)
+    np.put(est_max, np.arange(n - window_span, n), np.nan)
+    est_mean = np.zeros(n)
+    np.put(est_mean, np.arange(0, window_span), np.nan)
+    np.put(est_mean, np.arange(n - window_span, n), np.nan)
+    for idx in range(window_span, len(w) - window_span + 1):
+        window = w[idx - window_span:idx + window_span]
+        est_max[idx] = np.amax(window)
+        est_mean[idx] = np.mean(window)
+    df["EstMax"] = est_max
+    df["EstMean"] = est_mean
+    df["OriginalIndex"] = range(n)
+    df.sort_values(["EstMax", "EstMean"], ascending=[False, False], inplace=True)
+    df = df.reset_index(drop=True)
+    df["SortIndex"] = df.index
+
+    h = []
+    '''
+    We want to prioritize higher scores, but the built-in Python 
+    priority queue uses a min-heap structure, so we need to take the 
+    inverse of the score. Popping then gives us the highest scoring 
+    element.
+    '''
+    for i, v in enumerate(df.index):
+        oi = df.iloc[i]["OriginalIndex"]
+        # print(i, v, oi, df.iloc[i]["EstMax"], df.iloc[i]["EstMean"], df.iloc[i]["Chromosome"], df.iloc[i]["Start"], df.iloc[i]["End"])
+        item = (i, oi)
+        # print('pushing item: {}'.format(item))
+        heapq.heappush(h, item)
+    # print('----')
+    # print('{}'.format(heapq.heappop(h)))
+    # print('{}'.format(heapq.heappop(h)))
+    print(df)
+    sys.exit(0)
+    '''
+    Build a qualifying list, until we have as many elements as we want,
+    or until we have emptied the heap of testable, non-zero-score indices.
+    '''
+    q = []
+    k = n
+    while k > 0:
+        try:
+            (i, v) = heapq.heappop(h)
+            # print('i|v {}|{}'.format(i, v))
+            if np.isnan(df.iloc[v]["EstMax"]):
+                k -= 1
+                continue
+            start_v = (v - window_span) if (v - window_span) > 0 else 0
+            stop_v = (v + window_span + 1) if (v + window_span + 1) <= n else n
+            # print(np.any(r[start_v : stop_v]))
+            print(i, v, start_v, stop_v, df.iloc[v]["Score"], df.iloc[v]["EstMax"], df.iloc[v]["EstMean"], df.iloc[v]["Chromosome"], df.iloc[v]["Start"], df.iloc[v]["End"])
+            if not np.any(r[start_v : stop_v]):
+                print("appending [{}]".format(v))
+                r[v] = True
+                q.append(v)
+                k -= 1
+        except IndexError:
+            k = 0
+    
+    '''
+    Sort indices and print.
+    '''
+    # q.sort()
+    o = StringIO()
+    df = df.reindex(df["OriginalIndex"])
+    df.iloc[q].to_csv(o, sep='\t', index=False, header=False)
+    sys.stdout.write('{}'.format(o.getvalue()))
+    
+if __name__ == '__main__':
+    main()

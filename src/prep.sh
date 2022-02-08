@@ -21,6 +21,7 @@ total_width=$((${left_window_size} + ${right_window_size} + ${bin_size}))
 #
 gunzip -c ${input_gz} \
     | sort-bed - \
+    | ${PWD}/fix_bins.py ${bin_size} \
     > ${input_bed}
 
 #
