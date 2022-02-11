@@ -50,7 +50,8 @@ import click
 @click.command()
 @click.option('--input', help='input filename')
 @click.option('--k', type=int, default=-1, help='samples')
-def main(input, k):
+@click.option('--window-span', type=int, default=10, help='number of windows used for overlap/rejection testing')
+def main(input, k, window_span):
     '''
     Use merged intervals to build absolute coordinate space later on.
     Instead of the builtin read_bed method we use Pandas read_table to
@@ -58,7 +59,8 @@ def main(input, k):
     weird set operation results.
     '''
     # d = pr.read_bed(input)
-    d = pr.PyRanges(pd.read_table(input, names=['Chromosome', 'Start', 'End', 'State', 'Score', 'Metastrand', 'Pval', 'Qval']))
+    # d = pr.PyRanges(pd.read_table(input, names=['Chromosome', 'Start', 'End', 'State', 'Score', 'Metastrand', 'Pval', 'Qval']))
+    d = pr.PyRanges(pd.read_table(input, names=['Chromosome', 'Start', 'End', 'Score']))
     m = d.merge(strand=False)
     df = d.as_df()
     n = len(df.index)
@@ -142,6 +144,27 @@ def main(input, k):
     Sort qualifying values so that we can read the dataframe by index.
     '''
     q.sort()
+    '''
+    Get maximum score over window span in both directions from bin
+    '''
+    for i in q:
+        left_i = i - window_span if i - window_span >= 0 else i
+        right_i = i + window_span + 1 if i + window_span + 1 < n else n
+        vals = df[left_i : right_i]['Score'].values
+        try:
+            df.at[i, 'Score'] = np.amax(vals)
+        except ValueError:
+            print('----')
+            print(i)
+            print('----')
+            print(window_span)
+            print('----')
+            print(left_i)
+            print('----')
+            print(right_i)
+            print('----')
+            print(vals)
+            sys.exit(-1)
     '''
     Write elements to standard output, constraining to k elements, if possible.
     In either case, we are guaranteed non-overlapping elements.

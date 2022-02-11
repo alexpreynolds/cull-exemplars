@@ -67,7 +67,8 @@ import click
 @click.option('--k', type=int, help='samples')
 @click.option('--window-span', type=int, default=10, help='number of windows used for overlap/rejection testing')
 def main(input, k, window_span):
-    df = pd.read_csv(input, sep='\t', header=None, names=['Chromosome', 'Start', 'End', 'ID', 'Score', 'Strand', 'PVal', 'CorrectedPVal', 'Signif'])
+    # df = pd.read_csv(input, sep='\t', header=None, names=['Chromosome', 'Start', 'End', 'ID', 'Score', 'Strand', 'PVal', 'CorrectedPVal', 'Signif'])
+    df = pd.read_csv(input, sep='\t', header=None, names=['Chromosome', 'Start', 'End', 'Score'])
     n = len(df.index)
     r = np.zeros(n, dtype=np.bool_)
     w = df.loc[:, 'Score'].values

@@ -70,9 +70,10 @@ import click
 @click.option('--kth-percentile', type=float, default=0, help='value of kth percentile weight (e.g., 95%)')
 @click.option('--is-final-pass', default=False, is_flag=True, help='is this a final pass on data')
 def main(input, k, window_span, kth_percentile, is_final_pass):
-    column_names = ['Chromosome', 'Start', 'End', 'ID', 'Score', 'Strand', 'PVal', 'CorrectedPVal', 'Signif']
-    if is_final_pass:
-        column_names = ['Chromosome', 'Start', 'End', 'ID', 'Score', 'Strand']
+    # column_names = ['Chromosome', 'Start', 'End', 'ID', 'Score', 'Strand', 'PVal', 'CorrectedPVal', 'Signif']
+    # if is_final_pass:
+    #     column_names = ['Chromosome', 'Start', 'End', 'ID', 'Score', 'Strand']
+    column_names = ['Chromosome', 'Start', 'End', 'Score']
     df = pd.read_csv(input, sep='\t', header=None, names=column_names)
     n = len(df.index)
     r = np.zeros(n, dtype=np.bool_)
