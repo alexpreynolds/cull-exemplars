@@ -110,6 +110,7 @@ def main(input, k, window_span):
     for j in range(n):
         i = bisect.bisect_right(e, s[j]) - 1
         p.append(i)
+
     '''
     Set up initial opt(imum) table values.
     '''
@@ -132,11 +133,11 @@ def main(input, k, window_span):
         score = df.loc[df.index[j], 'Score']
         if score + opt[p[j]] > opt[j - 1]:
             q.append(j)
-            try:
-                assert(j > p[j])
-            except AssertionError:
-                sys.stderr.write('[j fail -> {} | p[j] -> {} ]\n'.format(j, p[j]))
-                sys.exit(-1)
+            # try:
+            #     assert(j > p[j])
+            # except AssertionError:
+            #     sys.stderr.write('[j fail -> {} | p[j] -> {} ]\n'.format(j, p[j]))
+            #     sys.exit(-1)
             j = p[j] # jump to the nearest disjoint interval to the left
         else:
             j -= 1 # try the "next" interval, one to the left
@@ -146,25 +147,26 @@ def main(input, k, window_span):
     q.sort()
     '''
     Get maximum score over window span in both directions from bin
+    Note: disabled for WIS testing against "disjoint-windows" method
     '''
-    for i in q:
-        left_i = i - window_span if i - window_span >= 0 else i
-        right_i = i + window_span + 1 if i + window_span + 1 < n else n
-        vals = df[left_i : right_i]['Score'].values
-        try:
-            df.at[i, 'Score'] = np.amax(vals)
-        except ValueError:
-            print('----')
-            print(i)
-            print('----')
-            print(window_span)
-            print('----')
-            print(left_i)
-            print('----')
-            print(right_i)
-            print('----')
-            print(vals)
-            sys.exit(-1)
+    # for i in q:
+    #     left_i = i - window_span if i - window_span >= 0 else i
+    #     right_i = i + window_span + 1 if i + window_span + 1 < n else n
+    #     vals = df[left_i : right_i]['Score'].values
+    #     try:
+    #         df.at[i, 'Score'] = np.amax(vals)
+    #     except ValueError:
+    #         print('----')
+    #         print(i)
+    #         print('----')
+    #         print(window_span)
+    #         print('----')
+    #         print(left_i)
+    #         print('----')
+    #         print(right_i)
+    #         print('----')
+    #         print(vals)
+    #         sys.exit(-1)
     '''
     Write elements to standard output, constraining to k elements, if possible.
     In either case, we are guaranteed non-overlapping elements.
