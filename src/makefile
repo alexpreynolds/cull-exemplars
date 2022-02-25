@@ -1,4 +1,5 @@
-SHELL=/bin/bash
+#SHELL=/bin/bash
+SHELL=./report_time.sh
 
 DESIRED_HITS=15181508
 MAXIMUM_POSSIBLE_HITS=15181508 # -> wc -l ${INTERVALS_BED}
@@ -11,8 +12,8 @@ DATA_DIR=${PWD}/../data
 RESULTS_DIR=${PWD}/../results
 # INTERVALS_GZ=${DATA_DIR}/intervals.txt.gz
 # INTERVALS_BED=${DATA_DIR}/intervals.bed
-# INTERVALS_GZ=${DATA_DIR}/pairwiseMetrics_cancer_non-cancer_s1.txt.gz
-# INTERVALS_BED=${DATA_DIR}/pairwiseMetrics_cancer_non-cancer_s1.bed
+INTERVALS_GZ=${DATA_DIR}/pairwiseMetrics_cancer_non-cancer_s1.txt.gz
+INTERVALS_BED=${DATA_DIR}/pairwiseMetrics_cancer_non-cancer_s1.bed
 # INTERVALS_GZ=${RESULTS_DIR}/highValueData.txt.gz
 # INTERVALS_BED=${RESULTS_DIR}/highValueData.bed
 # INTERVALS_GZ=${RESULTS_DIR}/flattenedData.txt.gz
@@ -28,7 +29,7 @@ PQ_MAX_WITH_KTH_PERC_RESULTS_BED=${RESULTS_DIR}/pq.maxhitsWithKthPercentile.bed
 WIS_RESULTS_BED=${RESULTS_DIR}/wis.bed
 MAX_MEAN_RESULTS_BED=${RESULTS_DIR}/maxMean.bed
  
-KTH_PERC := $(shell cut -f5 ${INTERVALS_BED} | Rscript -e 'quantile(as.numeric(readLines("stdin")), c(0.99))' | tail -1)
+# KTH_PERC := $(shell cut -f4 ${INTERVALS_BED} | Rscript -e 'quantile(as.numeric(readLines("stdin")), c(0.99))' | tail -1)
 
 all:
 
@@ -37,13 +38,13 @@ all:
 #
 
 # INPUT_FN=${DATA_DIR}/windows.fixed.25k.bed
-LEFT_WINDOW_WIDTH=12000
-RIGHT_WINDOW_WIDTH=12000
-EXTEND_WIDTH=12000
-WINDOW_WIDTH=25000
-INTERVAL_STEP=1000
+# LEFT_WINDOW_WIDTH=12000
+# RIGHT_WINDOW_WIDTH=12000
+# EXTEND_WIDTH=12000
+# WINDOW_WIDTH=25000
+# INTERVAL_STEP=1000
 # WINDOWS_BED=${INPUT_FN}
-# WINDOW_SPAN_COUNT=60
+# WINDOW_SPAN_COUNT=24 # 25000 / 1000 - 1kb middle bin
 
 extend_windows:
 	${PWD}/extend_windows.sh ${LEFT_WINDOW_WIDTH} ${RIGHT_WINDOW_WIDTH} ${WINDOW_WIDTH} ${DATA_DIR}/removeOverlap.bed.starch ${INPUT_FN}
@@ -156,8 +157,14 @@ wis_validate_no_overlaps:
 	${PWD}/validate_no_overlaps.py ${WINDOW_SIZE} < ${WIS_RESULTS_BED}
 
 wis_summary:
-#	cut -f5 ${WIS_RESULTS_BED} | Rscript -e 'summary (as.numeric (readLines ("stdin")))'
 	cut -f4 ${WIS_RESULTS_BED} | Rscript -e 'summary (as.numeric (readLines ("stdin")))'
 
 clean:
 	rm -f ${WINDOWS_BED} ${INTERVALS_BED} ${PQ_RESULTS_BED}
+
+bins_by_group:
+	rm -f ${RESULTS_DIR}/bins_by_group.txt
+	echo "Group\tBin" >> ${RESULTS_DIR}/bins_by_group.txt
+	awk -v FS="\t" -v OFS="\t" '{ print "WIS", $$5 }' ${RESULTS_DIR}/wis.bed >> ${RESULTS_DIR}/bins_by_group.txt
+	awk -v FS="\t" -v OFS="\t" '{ print "MM", $$5 }' ${RESULTS_DIR}/maxMean.bed >> ${RESULTS_DIR}/bins_by_group.txt
+	awk -v FS="\t" -v OFS="\t" '{ print "PQ", $$5 }' ${RESULTS_DIR}/pq.maxHits.bed >> ${RESULTS_DIR}/bins_by_group.txt

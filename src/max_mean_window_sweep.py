@@ -45,7 +45,7 @@ def main(input, k, window_span):
     
     n = len(df.index)
     r = np.zeros(n, dtype=np.bool_)
-    
+    df['IndexOfMaxVal'] = -1
     
     # w = df.loc[:, 'Score'].values
     w = df.loc[:, 'Score'].to_numpy()
@@ -61,6 +61,8 @@ def main(input, k, window_span):
     df["EstMean"] = est_mean_v2
     
     df["OriginalIndex"] = range(n)
+
+    df_copy = df.copy()
     
     df.sort_values(["EstMax", "EstMean"], ascending=[False, False], inplace=True)
     
@@ -87,6 +89,12 @@ def main(input, k, window_span):
             #     r[i] = True
             np.put(r, np.arange(start_i, stop_i), True)
             q.append(v)
+            vals_over_span = df_copy[start_i : stop_i]['Score'].values
+            df.at[i, 'IndexOfMaxVal'] = np.argmax(vals_over_span)
+            # print(start_i, stop_i)
+            # print(vals_over_span)
+            # print(np.argmax(vals_over_span))
+            # sys.exit(0)
     
     '''
     Print indices in raw order.

@@ -64,6 +64,7 @@ def main(input, k, window_span):
     m = d.merge(strand=False)
     df = d.as_df()
     n = len(df.index)
+    df['IndexOfMaxVal'] = -1
     '''
     Build accumulated sizes dictionary for calculating absolute coordinates.
     '''
@@ -149,24 +150,25 @@ def main(input, k, window_span):
     Get maximum score over window span in both directions from bin
     Note: disabled for WIS testing against "disjoint-windows" method
     '''
-    # for i in q:
-    #     left_i = i - window_span if i - window_span >= 0 else i
-    #     right_i = i + window_span + 1 if i + window_span + 1 < n else n
-    #     vals = df[left_i : right_i]['Score'].values
-    #     try:
-    #         df.at[i, 'Score'] = np.amax(vals)
-    #     except ValueError:
-    #         print('----')
-    #         print(i)
-    #         print('----')
-    #         print(window_span)
-    #         print('----')
-    #         print(left_i)
-    #         print('----')
-    #         print(right_i)
-    #         print('----')
-    #         print(vals)
-    #         sys.exit(-1)
+    for i in q:
+        left_i = i - window_span if i - window_span >= 0 else i
+        right_i = i + window_span + 1 if i + window_span + 1 < n else n
+        vals_over_span = df[left_i : right_i]['Score'].values
+        try:
+            df.at[i, 'IndexOfMaxVal'] = np.argmax(vals_over_span)
+            df.at[i, 'Score'] = np.amax(vals_over_span)
+        except ValueError:
+            print('----')
+            print(i)
+            print('----')
+            print(window_span)
+            print('----')
+            print(left_i)
+            print('----')
+            print(right_i)
+            print('----')
+            print(vals_over_span)
+            sys.exit(-1)
     '''
     Write elements to standard output, constraining to k elements, if possible.
     In either case, we are guaranteed non-overlapping elements.

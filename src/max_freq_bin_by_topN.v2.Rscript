@@ -1,0 +1,31 @@
+#!/usr/bin/env Rscript
+
+df <- read.delim("../results/wis.stats.txt", header=T)
+png(file="../results/wis.stats.txt.png", width=1200, height=800, res=150)
+
+# df <- read.delim("../results/maxMean.stats.txt", header=T)
+# png(file="../results/maxMean.stats.txt.png", width=1200, height=800, res=150)
+
+x = df$TopNStart
+y = df$Mean
+
+p <- plot(y~x, bty="l", type="l", main="Mean highest-scoring bin within top-N-window rank groups (WIS)", xlab="Top-N-window rank", ylab="Bin index", col=rgb(1, 0, 0), lwd=2, pch=NULL, ylim=c(0, 80), xaxt = "n")
+print(p)
+
+l <- lines(y~x)
+print(l)
+
+xt <- seq(0, 100000, 20000)
+a <- axis(1, at=xt, labels=sprintf("%5d", xt))
+print(a)
+
+ciLeft <- df$CI_left
+ciRight <- df$CI_right
+cil <- lines(ciLeft~x, col=rgb(0, 0, 1), lwd=2, lty=3)
+print(cil)
+cir <- lines(ciRight~x, col=rgb(0, 0, 1), lwd=2, lty=3)
+print(cir)
+
+abline(h=62, col="green")
+
+dev.off()

@@ -1,0 +1,11 @@
+#!/usr/bin/env Rscript
+
+df <- read.delim("../results/bins_by_group.txt", header=T)
+
+library(ggplot2)
+png(file="../results/bins_by_group.png", width=1200, height=800, res=150)
+ggplot(df, aes(x = Bin, fill = Group, colour = Group)) +
+  geom_histogram(alpha = 0.33, position = "identity", binwidth=1) +
+  labs(x = "Bin index (62 = original bin)", y = "Frequency", title = "Derived position of maximum score over window span (all intervals per group)") +
+  theme(plot.title = element_text(hjust = 0.5))
+dev.off()

@@ -55,6 +55,7 @@ Notes
 
 '''
 
+from curses import window
 import sys
 import heapq
 import pandas as pd
@@ -69,6 +70,7 @@ import click
 def main(input, k, window_span):
     # df = pd.read_csv(input, sep='\t', header=None, names=['Chromosome', 'Start', 'End', 'ID', 'Score', 'Strand', 'PVal', 'CorrectedPVal', 'Signif'])
     df = pd.read_csv(input, sep='\t', header=None, names=['Chromosome', 'Start', 'End', 'Score'])
+    df['IndexOfMaxVal'] = -1
     n = len(df.index)
     r = np.zeros(n, dtype=np.bool_)
     w = df.loc[:, 'Score'].values
@@ -97,6 +99,7 @@ def main(input, k, window_span):
             if not np.any(r[start_i:stop_i]):
                 r[i] = True
                 q.append(i)
+                df.at[i, 'IndexOfMaxVal'] = window_span // 2
                 k -= 1
         except IndexError:
             k = 0
